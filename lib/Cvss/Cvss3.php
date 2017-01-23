@@ -113,23 +113,23 @@ class Cvss3
     private $temporalMetrics = array(
         'E' => array(
             'X' => 1,
-            'H' => 1,
-            'F' => 0.97,
-            'P' => 0.94,
             'U' => 0.91,
+            'P' => 0.94,
+            'F' => 0.97,
+            'H' => 1,
         ),
         'RL' => array(
             'X' => 1,
-            'U' => 1,
-            'W' => 0.97,
-            'T' => 0.96,
             'O' => 0.95,
+            'T' => 0.96,
+            'W' => 0.97,
+            'U' => 1,
         ),
         'RC' => array(
             'X' => 1,
-            'C' => 1,
-            'R' => 0.96,
             'U' => 0.92,
+            'R' => 0.96,
+            'C' => 1,
         ),
     );
 
@@ -141,21 +141,21 @@ class Cvss3
     private $environmentalMetrics = array(
         'CR' => array(
             'X' => 1,
-            'H' => 1.5,
-            'M' => 1,
             'L' => 0.5,
+            'M' => 1,
+            'H' => 1.5,
         ),
         'IR' => array(
             'X' => 1,
-            'H' => 1.5,
-            'M' => 1,
             'L' => 0.5,
+            'M' => 1,
+            'H' => 1.5,
         ),
         'AR' => array(
             'X' => 1,
-            'H' => 1.5,
-            'M' => 1,
             'L' => 0.5,
+            'M' => 1,
+            'H' => 1.5,
         ),
         'MAV' => array(
             'X' => 0,
@@ -366,7 +366,7 @@ class Cvss3
      *
      * @return int|null|string
      */
-    private function getSeverity($score)
+    protected function getSeverity($score)
     {
         foreach ($this->severityRatingScale as $level => $options) {
             if ($score >= $options['min_range'] && $score <= $options['max_range']) {
