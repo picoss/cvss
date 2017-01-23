@@ -3,6 +3,7 @@
 namespace YWH\CvssBundle\Tests\Util;
 
 use Picoss\Cvss\Cvss3;
+use Symfony\Component\OptionsResolver\Exception\MissingOptionsException;
 
 class Cvss3Test extends \PHPUnit_Framework_TestCase
 {
@@ -35,7 +36,7 @@ class Cvss3Test extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException \InvalidArgumentException
+     * @expectedException Symfony\Component\OptionsResolver\Exception\UndefinedOptionsException
      */
     public function testWrongVectorBaseMetric()
     {
@@ -46,11 +47,22 @@ class Cvss3Test extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException \InvalidArgumentException
+     * @expectedException Symfony\Component\OptionsResolver\Exception\MissingOptionsException
      */
     public function testMissingBaseMetric()
     {
         $vector = 'CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H';
+
+        $cvss = new Cvss3();
+        $cvss->setVector($vector);
+    }
+
+    /**
+     * @expectedException Symfony\Component\OptionsResolver\Exception\InvalidOptionsException
+     */
+    public function testWrongBaseMetricValue()
+    {
+        $vector = 'CVSS:3.0/AV:foo/AC:L/PR:N/UI:N/S:U/C:H/I:H:/A:H';
 
         $cvss = new Cvss3();
         $cvss->setVector($vector);
