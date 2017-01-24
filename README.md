@@ -18,7 +18,7 @@ Documentation
 
 ## 1 - Installation
 
-Dowload CVSS library using composer:
+Dowload the CVSS library using composer:
 
 ```php
 composer require picoss/cvss
@@ -28,7 +28,7 @@ composer require picoss/cvss
 
 ### 2.1 Vector parser
 
-First, you need to give the Cvss3 calculator a valid Cvss vector:
+First, you need to give the CVSSv3 calculator a valid CVSS vector:
 
 ```php
 use Picoss\Cvss;
@@ -39,17 +39,17 @@ $cvss->setVector('CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N');
 
 Base metrics (AV,AC,PR,UI,S,C,I and A) must be defined.
 
-An undefined metric will throw the following error
+An undefined metric will throw the following error:
 ```php
 Symfony\Component\OptionsResolver\Exception\UndefinedOptionsException
 ```
 
-A missing metric will throw the following error
+A missing metric will throw the following error:
 ```php
 Symfony\Component\OptionsResolver\Exception\MissingOptionsException
 ```
 
-A wrong metric value will throw the following error
+A wrong metric value will throw the following error:
 ```php
 Symfony\Component\OptionsResolver\Exception\InvalidOptionsException
 ```
