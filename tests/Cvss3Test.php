@@ -1,6 +1,6 @@
 <?php
 
-namespace YWH\CvssBundle\Tests\Util;
+namespace Picoss\Cvss;
 
 use Picoss\Cvss\Cvss3;
 use Symfony\Component\OptionsResolver\Exception\MissingOptionsException;
