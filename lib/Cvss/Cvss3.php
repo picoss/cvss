@@ -354,7 +354,7 @@ class Cvss3
      *
      * @return array
      */
-    public function getEnvironmentalMetricsDefinition()
+    public function getEnvironmentalMetricDefinitions()
     {
         return $this->environmentalMetrics;
     }
