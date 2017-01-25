@@ -16,17 +16,27 @@ class Cvss3
     /**
      * @var string
      */
-    static private $vectorHead = 'CVSS:3.0';
+    static protected $vectorHead = 'CVSS:3.0';
 
     /**
      * @var string
      */
-    static private $metricSeparator = '/';
+    static protected $metricSeparator = '/';
 
     /**
      * @var string
      */
-    static private $valueSeparator = ':';
+    static protected $valueSeparator = ':';
+
+    /**
+     * @var float
+     */
+    static protected $exploitabilityCoefficient = 8.22;
+
+    /**
+     * @var float
+     */
+    static protected $scopeCoefficient = 1.08;
 
     /**
      * @var array
@@ -85,23 +95,23 @@ class Cvss3
             'R' => 0.62,
         ),
         'S' => array(
-            'U' => 0,
-            'C' => 0,
+            'U' => 6.42,
+            'C' => 7.52,
         ),
         'C' => array(
-            'H' => 0.56,
-            'L' => 0.22,
             'N' => 0,
+            'L' => 0.22,
+            'H' => 0.56,
         ),
         'I' => array(
-            'H' => 0.56,
-            'L' => 0.22,
             'N' => 0,
+            'L' => 0.22,
+            'H' => 0.56,
         ),
         'A' => array(
-            'H' => 0.56,
-            'L' => 0.22,
             'N' => 0,
+            'L' => 0.22,
+            'H' => 0.56,
         ),
     );
 
@@ -188,8 +198,8 @@ class Cvss3
         ),
         'MS' => array(
             'X' => 0,
-            'U' => 0,
-            'C' => 0,
+            'U' => 6.42,
+            'C' => 7.52,
         ),
         'MC' => array(
             'X' => 0,
@@ -461,10 +471,10 @@ class Cvss3
                     switch ($value) {
                         case 'L':
                         case 'H':
-                            if ($options['S'] == 'U') {
+                            if ($this->vectorInputs['S'] == 'U') {
                                 $value = (float) $this->baseMetrics[$metric][$value]['unchanged'];
                             }
-                            elseif ($options['S'] == 'C') {
+                            elseif ($this->vectorInputs['S'] == 'C') {
                                 $value = (float) $this->baseMetrics[$metric][$value]['changed'];
                             }
                             break;
@@ -475,7 +485,7 @@ class Cvss3
                     return $value;
                 });
             }
-            elseif ($metric != 'S') {
+            else { //if ($metric != 'S') {
                 $resolver->setNormalizer($metric, function (Options $options, $value) use ($metric) {
                     return (float) $this->baseMetrics[$metric][$value];
                 });
@@ -498,10 +508,10 @@ class Cvss3
                 ->setAllowedValues($metric, array_keys($values))
             ;
             switch ($metric) {
-                case 'MS': break;
+//                case 'MS': break;
                 case 'MPR':
                     $resolver->setNormalizer($metric, function (Options $options, $value) use ($metric) {
-                        $modifiedScope = $options['MS'] != 'X' ? $options['MS'] : $options['S'];
+                        $modifiedScope = isset($this->vectorInputs['MS']) && $this->vectorInputs['MS'] != 'X' ? $this->vectorInputs['MS'] : $this->vectorInputs['S'];
                         switch ($value) {
                             case 'X':
                                 switch ($modifiedScope) {
@@ -566,27 +576,27 @@ class Cvss3
          */
         $impactSubScore = 0;
         $impactSubScoreBase = 1 - ((1 - $this->vectorLevels['C']) * (1 - $this->vectorLevels['I']) * (1 - $this->vectorLevels['A']));
-        switch ($this->vectorLevels['S']) {
+        switch ($this->vectorInputs['S']) {
             case 'U':
-                $impactSubScore = 6.42 * $impactSubScoreBase;
+                $impactSubScore = $this->vectorLevels['S'] * $impactSubScoreBase;
                 break;
             case 'C':
-                $impactSubScore = 7.52 * ($impactSubScoreBase - 0.029) - 3.25 * pow(($impactSubScoreBase - 0.02), 15);
+                $impactSubScore = $this->vectorLevels['S'] * ($impactSubScoreBase - 0.029) - 3.25 * pow(($impactSubScoreBase - 0.02), 15);
                 break;
         }
 
-        $exploitabilitySubScore = 8.22 * $this->vectorLevels['AV'] * $this->vectorLevels['AC'] * $this->vectorLevels['PR'] * $this->vectorLevels['UI'];
+        $exploitabilitySubScore = self::$exploitabilityCoefficient * $this->vectorLevels['AV'] * $this->vectorLevels['AC'] * $this->vectorLevels['PR'] * $this->vectorLevels['UI'];
 
         if ($impactSubScore <= 0) {
             $this->baseScore = 0;
         }
         else {
-            switch ($this->vectorLevels['S']) {
+            switch ($this->vectorInputs['S']) {
                 case 'U':
                     $this->baseScore = self::roundUp(min($impactSubScore + $exploitabilitySubScore, 10));
                     break;
                 case 'C':
-                    $this->baseScore = self::roundUp(min(1.08 * ($impactSubScore + $exploitabilitySubScore), 10));
+                    $this->baseScore = self::roundUp(min(self::$scopeCoefficient * ($impactSubScore + $exploitabilitySubScore), 10));
                     break;
             }
         }
@@ -601,17 +611,17 @@ class Cvss3
          */
         $modifiedImpactSubScore = 0;
         $modifiedImpactSubScoreBase = min(1 - ((1 - $this->vectorLevels['MC'] * $this->vectorLevels['CR']) * (1 - $this->vectorLevels['MI'] * $this->vectorLevels['IR']) * (1 - $this->vectorLevels['MA'] * $this->vectorLevels['AR'])), 0.915);
-        $modifiedScope = $this->vectorLevels['MS'] != 'X' ? $this->vectorLevels['MS'] : $this->vectorLevels['S'];
+        $modifiedScope = isset($this->vectorInputs['MS']) && $this->vectorInputs['MS'] != 'X' ? $this->vectorInputs['MS'] : $this->vectorInputs['S'];
         switch ($modifiedScope) {
             case 'U':
-                $modifiedImpactSubScore = 6.42 * $modifiedImpactSubScoreBase;
+                $modifiedImpactSubScore = $this->vectorLevels['MS'] * $modifiedImpactSubScoreBase;
                 break;
             case 'C':
-                $modifiedImpactSubScore = 7.52 * ($modifiedImpactSubScoreBase - 0.029) - 3.25 * pow(($modifiedImpactSubScoreBase - 0.02), 15);
+                $modifiedImpactSubScore = $this->vectorLevels['MS'] * ($modifiedImpactSubScoreBase - 0.029) - 3.25 * pow(($modifiedImpactSubScoreBase - 0.02), 15);
                 break;
         }
 
-        $modifiedExploitabilitySubScore = 8.22 * $this->vectorLevels['MAV'] * $this->vectorLevels['MAC'] * $this->vectorLevels['MPR'] * $this->vectorLevels['MUI'];
+        $modifiedExploitabilitySubScore = self::$exploitabilityCoefficient * $this->vectorLevels['MAV'] * $this->vectorLevels['MAC'] * $this->vectorLevels['MPR'] * $this->vectorLevels['MUI'];
 
         if ($modifiedImpactSubScore <= 0) {
             $this->environmentalScore = $this->baseScore;
@@ -622,7 +632,7 @@ class Cvss3
                     $this->environmentalScore = self::roundUp(self::roundUp(min($modifiedImpactSubScore + $modifiedExploitabilitySubScore, 10)) * $this->vectorLevels['E'] * $this->vectorLevels['RL'] * $this->vectorLevels['RC']);
                     break;
                 case 'C':
-                    $this->environmentalScore = self::roundUp(self::roundUp(min(1.08 * ($modifiedImpactSubScore + $modifiedExploitabilitySubScore), 10)) * $this->vectorLevels['E'] * $this->vectorLevels['RL'] * $this->vectorLevels['RC']);
+                    $this->environmentalScore = self::roundUp(self::roundUp(min(self::$scopeCoefficient * ($modifiedImpactSubScore + $modifiedExploitabilitySubScore), 10)) * $this->vectorLevels['E'] * $this->vectorLevels['RL'] * $this->vectorLevels['RC']);
                     break;
             }
         }
