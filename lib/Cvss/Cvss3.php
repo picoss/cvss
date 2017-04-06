@@ -387,6 +387,34 @@ class Cvss3
     }
 
     /**
+     * Get overall score
+     *
+     * @return float
+     */
+    public function getOverallScore()
+    {
+        if ($this->environmentalScore != $this->baseScore) {
+            return $this->environmentalScore;
+        }
+        elseif ($this->temporalScore != $this->baseScore) {
+            return $this->temporalScore;
+        }
+        else {
+            return $this->baseScore;
+        }
+    }
+
+    /**
+     * Get overall severity
+     *
+     * @return int|null|string
+     */
+    public function getOverallScoreSeverity()
+    {
+        return $this->getSeverity($this->getOverallScore());
+    }
+
+    /**
      * Get base vector
      *
      * @return string
