@@ -387,6 +387,34 @@ class Cvss3
     }
 
     /**
+     * Get overall score
+     *
+     * @return float
+     */
+    public function getOverallScore()
+    {
+        if ($this->environmentalScore != $this->baseScore) {
+            return $this->environmentalScore;
+        }
+        elseif ($this->temporalScore != $this->baseScore) {
+            return $this->temporalScore;
+        }
+        else {
+            return $this->baseScore;
+        }
+    }
+
+    /**
+     * Get overall severity
+     *
+     * @return int|null|string
+     */
+    public function getOverallScoreSeverity()
+    {
+        return $this->getSeverity($this->getOverallScore());
+    }
+
+    /**
      * Get base vector
      *
      * @return string
@@ -514,13 +542,18 @@ class Cvss3
                         $modifiedScope = isset($this->vectorInputs['MS']) && $this->vectorInputs['MS'] != 'X' ? $this->vectorInputs['MS'] : $this->vectorInputs['S'];
                         switch ($value) {
                             case 'X':
-                                switch ($modifiedScope) {
-                                    case 'U':
-                                        $value = (float) $this->baseMetrics[substr($metric, 1)][$this->vectorInputs[substr($metric, 1)]]['unchanged'];
-                                        break;
-                                    case 'C':
-                                        $value = (float) $this->baseMetrics[substr($metric, 1)][$this->vectorInputs[substr($metric, 1)]]['changed'];
-                                        break;
+                                if ($this->vectorInputs[substr($metric, 1)] == 'N') {
+                                    $value = (float)$this->baseMetrics[substr($metric, 1)][$this->vectorInputs[substr($metric, 1)]];
+                                }
+                                else {
+                                    switch ($modifiedScope) {
+                                        case 'U':
+                                            $value = (float)$this->baseMetrics[substr($metric, 1)][$this->vectorInputs[substr($metric, 1)]]['unchanged'];
+                                            break;
+                                        case 'C':
+                                            $value = (float)$this->baseMetrics[substr($metric, 1)][$this->vectorInputs[substr($metric, 1)]]['changed'];
+                                            break;
+                                    }
                                 }
                                 break;
                             case 'L':
